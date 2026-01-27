@@ -2,6 +2,7 @@ import { createNativeStackNavigator } from "@react-navigation/native-stack";
 import React from "react";
 import TabNav from "./TabNav";
 import BookDetailPage from "../Book/BookDetailPage";
+import ReadBookPage from "../Book/ReadBookPage";
 
 const stack = createNativeStackNavigator();
 const RootNav = () => {
@@ -13,6 +14,7 @@ const RootNav = () => {
     >
       <stack.Screen name="TabNav" component={TabNav} options={{ headerShown: false }} />
       <stack.Screen name="BookDetail" component={BookDetailPage} />
+      <stack.Screen name="ReadBook" component={ReadBookPage} />
     </stack.Navigator>
   );
 };

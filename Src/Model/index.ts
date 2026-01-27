@@ -3,6 +3,11 @@ export type RootStackParamList = {
   BookDetail: {
     book: IBook;
   };
+  ReadBook: {
+    book: IBook;
+    chapter: IChapter;
+    chapterList: IChapter[];
+  };
 };
 
 export interface IBook {
@@ -22,4 +27,8 @@ export interface IBook {
 export interface IChapter {
   chapter_id: number;
   tit: string;
+}
+
+export interface IBookContent extends IChapter {
+  text: string;
 }

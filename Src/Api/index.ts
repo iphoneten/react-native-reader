@@ -1,10 +1,11 @@
-import { IBook, IChapter } from "../Model";
+import { IBook, IBookContent, IChapter } from "../Model";
 import { DefaultPageSize } from "../Util";
 
 const BASE_URL = 'https://www.bqgns.com';
 
 const GET_CATEGRORY = 'api/query/get_list';
 const GET_BOOK_LIST = 'api/query/get_book_list';
+const GET_BOOK_CONTENT = 'api/query/get_book_text';
 
 // const POST = async (path: string, body: any) => {
 //   const response = await fetch(`${BASE_URL}/${path}`, {
@@ -68,10 +69,29 @@ const getBookListApi = async (bookId: number, page: number = 1): Promise<IChapte
   } finally {
 
   }
-  // return GET(path, params);
+}
+
+const getBookContentApi = async (bookId: number, chapterId: number): Promise<IBookContent> => {
+  const path = GET_BOOK_CONTENT;
+  const params = {
+    bookId: bookId,
+    id: chapterId,
+  };
+  try {
+    const response = await GET(path, params);
+    if (response.code === 0) {
+      return {} as IBookContent;
+    }
+    return response.data.text[0];
+  } catch (error) {
+    return {} as IBookContent;
+  } finally {
+
+  }
 }
 
 export default {
   getCategoryBook,
   getBookListApi,
+  getBookContentApi,
 }

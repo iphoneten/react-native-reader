@@ -1,16 +1,23 @@
 import React, { useEffect } from "react";
 import { FlatList, Image, Text, TouchableOpacity, View, StyleSheet } from "react-native";
 import CommonView from "../Components/CommonView";
-import { RouteProp, useRoute } from "@react-navigation/native";
+import { RouteProp, useNavigation, useRoute } from "@react-navigation/native";
 import { IBook, IChapter, RootStackParamList } from "../Model";
 import Api from "../Api";
+import { NativeStackNavigationProp } from "@react-navigation/native-stack";
 
 type BookDetailRouteProp = RouteProp<
   RootStackParamList,
   "BookDetail"
 >;
+
+type BookDetailNavigationProp = NativeStackNavigationProp<
+  RootStackParamList,
+  "BookDetail"
+>;
 const BookDetailPage = () => {
   const route = useRoute<BookDetailRouteProp>();
+  const navigation = useNavigation<BookDetailNavigationProp>();
   const book = route.params?.book;
   const [chapterList, setChapterList] = React.useState<IChapter[]>([]);
   useEffect(() => {
@@ -26,6 +33,8 @@ const BookDetailPage = () => {
 
   const onPressStartRead = (chapterId: number = 1) => {
     console.log('onPressStartRead', chapterId);
+    const chapter = chapterList.find(item => item.chapter_id === chapterId) || chapterList[0];
+    navigation.navigate('ReadBook', { book, chapter, chapterList });
   };
 
   const bookInfoView = (item: IBook) => {
@@ -100,6 +109,7 @@ const styles = StyleSheet.create({
   cover: {
     width: 140,
     height: 200,
+    borderRadius: 10,
   },
   bookContent: {
     flex: 1,
@@ -129,12 +139,12 @@ const styles = StyleSheet.create({
     padding: 10,
   },
   chapterTitle: {
-    fontSize: 20,
-    fontWeight: 'bold',
+    fontSize: 16,
+    fontWeight: 'medium',
   },
   divider: {
     height: 1,
-    backgroundColor: '#999',
+    backgroundColor: '#d5d4d4ff',
   },
   list: {
     flex: 1,

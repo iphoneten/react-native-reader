@@ -1,15 +1,18 @@
 import { useNavigation } from "@react-navigation/native";
-import React, { ReactNode } from "react";
+import React, { ReactNode, useEffect } from "react";
 import { Text, View, StyleSheet, TouchableOpacity, Image, Dimensions } from "react-native";
-import { SafeAreaView } from "react-native-safe-area-context";
+import { SafeAreaView, useSafeAreaInsets } from "react-native-safe-area-context";
 import images from './../images';
+import Animated, { useSharedValue, useAnimatedStyle, withTiming } from 'react-native-reanimated';
+
 interface IProps {
   title?: string;
   back?: boolean;
   leftView?: React.ReactNode;
   rightView?: React.ReactNode;
   onBackPress?: () => void;
-  children?: ReactNode
+  children?: ReactNode;
+  showHeader?: boolean
 }
 
 const deviceWidth = Math.round(Dimensions.get('window').width);
@@ -19,7 +22,8 @@ const CommonView: React.FC<IProps> = ({
   leftView,
   rightView,
   onBackPress,
-  children
+  children,
+  showHeader = true,
 }) => {
 
   const navigation = useNavigation();
@@ -30,35 +34,47 @@ const CommonView: React.FC<IProps> = ({
       navigation.goBack();
     }
   };
-
+  const insets = useSafeAreaInsets();
+  const opacity = useSharedValue(showHeader ? 1 : 0);
+  useEffect(() => {
+    opacity.value = withTiming(showHeader ? 1 : 0, { duration: 200 });
+  });
+  const animatedHeaderStyle = useAnimatedStyle(() => ({
+    opacity: opacity.value,
+    transform: [{ translateY: withTiming(opacity.value ? 0 : -50) }],
+  }));
   return (
     <View style={styles.container}>
-      <SafeAreaView
-        edges={["top", "left", "right"]}
-        style={styles.headerSafeArea}
-      >
-        <View style={styles.headerContainer}>
-          <View style={styles.leftside}>
-            {back ? (
-              <TouchableOpacity onPress={handleBack}>
-                <Image
-                  style={styles.backImage}
-                  source={images.backIcon}
-                />
-              </TouchableOpacity>
-            ) : (
-              leftView
-            )}
-          </View>
+      {showHeader && (
+        <Animated.View style={[styles.headerSafeArea, animatedHeaderStyle]}>
+          <SafeAreaView
+            edges={["top", "left", "right"]}
+            style={styles.headerContainerWrapper}
+          >
+            <View style={[styles.headerContainer]}>
+              <View style={styles.leftside}>
+                {back ? (
+                  <TouchableOpacity onPress={handleBack}>
+                    <Image
+                      style={styles.backImage}
+                      source={images.backIcon}
+                    />
+                  </TouchableOpacity>
+                ) : (
+                  leftView
+                )}
+              </View>
 
-          <View style={styles.titleContainer}>
-            <Text style={styles.title}>{title}</Text>
-          </View>
+              <View style={styles.titleContainer}>
+                <Text style={styles.title}>{title}</Text>
+              </View>
 
-          <View style={styles.rightSide}>{rightView}</View>
-        </View>
-      </SafeAreaView>
-      <View style={styles.childrenContainer}>
+              <View style={styles.rightSide}>{rightView}</View>
+            </View>
+          </SafeAreaView>
+        </Animated.View>
+      )}
+      <View style={[styles.childrenContainer, !showHeader && { paddingTop: insets.top, paddingBottom: insets.bottom }]}>
         {children}
       </View>
     </View>
@@ -71,6 +87,9 @@ const styles = StyleSheet.create({
     backgroundColor: "#fff",
   },
   headerSafeArea: {
+    backgroundColor: "#fff",
+  },
+  headerContainerWrapper: {
     backgroundColor: "#fff",
   },
   headerContainer: {
