@@ -1,12 +1,12 @@
 import React from "react";
 import { Text, View } from "react-native";
 
-const DiscoverPage = () => {
+const MinePage = () => {
   return (
     <View>
-      <Text>{'Discover Page'}</Text>
+      <Text>{'Mine Page'}</Text>
     </View>
   );
 };
 
-export default DiscoverPage;
+export default MinePage;
