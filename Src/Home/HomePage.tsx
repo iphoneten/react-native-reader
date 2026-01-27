@@ -1,11 +1,18 @@
 import React, { useEffect } from "react";
-import { FlatList, ScrollView, Text, TouchableOpacity, View, Image, StyleSheet, RefreshControl } from "react-native";
+import { FlatList, ScrollView, Text, TouchableOpacity, View, StyleSheet, RefreshControl } from "react-native";
 import Api from "../Api";
 import { categroyList, DefaultPageSize } from "../Util";
-import { IBook } from "../Model";
+import { IBook, RootStackParamList } from "../Model";
 import { useNavigation } from "@react-navigation/native";
+import BookItem from "../Components/BookItem";
+import { NativeStackNavigationProp } from "@react-navigation/native-stack";
+
+type HomeNavProp = NativeStackNavigationProp<
+  RootStackParamList,
+  "Home"
+>;
 const HomePage = () => {
-  const navigation = useNavigation();
+  const navigation = useNavigation<HomeNavProp>();
   const [currentCategory, setCurrentCategory] = React.useState(categroyList[0]);
   const [page, setPage] = React.useState(1);
   const [bookList, setBookList] = React.useState<IBook[]>([]);
@@ -16,7 +23,7 @@ const HomePage = () => {
       if (page === 1) {
         setBookList(res);
       } else {
-        setBookList([...bookList, ...res]);
+        setBookList(prev => [...prev, ...res]);
       }
       setLoading(false);
     });
@@ -42,34 +49,17 @@ const HomePage = () => {
 
   const _renderItem = ({ item }: { item: IBook }) => {
     return (
-      <View style={{ flex: 1 }}>
-        <TouchableOpacity
-          onPress={onPressBook.bind(this, item)}
-        >
-          <View style={{ flexDirection: 'row', padding: 10 }}>
-            <View>
-              <Image
-                style={{ width: 140, height: 200 }}
-                source={{ uri: item.imgUrl }}
-              />
-            </View>
-            <View style={{ flex: 1, marginLeft: 10 }}>
-              <Text style={{ fontSize: 20, fontWeight: 'bold' }}>{item.title}</Text>
-              <Text style={{ marginTop: 8 }} >{`作者: ${item.author}`}</Text>
-              <Text style={{ marginTop: 8 }} numberOfLines={3}>{item.des}</Text>
-              <Text style={{ marginTop: 8 }} >{`更新内容: ${item.update_content}`}</Text>
-              <Text style={{ marginTop: 8 }} >{`更新时间: ${item.update_time.includes('T') ? item.update_time.split('T')[0] : item.update_time}`}</Text>
-            </View>
-          </View>
-        </TouchableOpacity>
-      </View>
+      <BookItem
+        book={item}
+        onPressItem={onPressBook}
+      />
     );
   };
 
   return (
-    <View>
+    <View style={styles.container}>
       <ScrollView
-        style={{ width: '100%', height: 40 }}
+        style={styles.categoryScroll}
         horizontal={true}
         showsHorizontalScrollIndicator={false}
         scrollEventThrottle={16}
@@ -79,17 +69,16 @@ const HomePage = () => {
             return (
               <TouchableOpacity
                 key={item.id}
-                style={{ ...styles.tab, backgroundColor: item.id === currentCategory.id ? '#339AF0' : '#999' }}
+                style={[styles.tab, item.id === currentCategory.id ? styles.tabActive : styles.tabInactive]}
                 onPress={onPressCategory.bind(this, item)}
               >
-                <Text style={{ color: '#fff' }}>{item.name}</Text>
+                <Text style={styles.tabText}>{item.name}</Text>
               </TouchableOpacity>
             );
           })
         }
       </ScrollView>
       <FlatList
-        // style={{ flex: 1 }}
         data={bookList}
         renderItem={_renderItem}
         keyExtractor={(item, index) => index.toString()}
@@ -109,12 +98,27 @@ const HomePage = () => {
 };
 
 const styles = StyleSheet.create({
+  container: {
+    flex: 1,
+  },
+  categoryScroll: {
+    width: '100%',
+    height: 40,
+  },
   tab: {
     width: 100,
     height: 40,
     justifyContent: 'center',
     alignItems: 'center',
-    backgroundColor: '#999'
+  },
+  tabActive: {
+    backgroundColor: '#339AF0',
+  },
+  tabInactive: {
+    backgroundColor: '#999',
+  },
+  tabText: {
+    color: '#fff',
   },
 })
 

@@ -1,3 +1,10 @@
+export type RootStackParamList = {
+  Home: undefined;
+  BookDetail: {
+    book: IBook;
+  };
+};
+
 export interface IBook {
   id: number;
   class_id: number;

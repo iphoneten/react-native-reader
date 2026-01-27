@@ -1,12 +1,16 @@
-import React, { use, useEffect } from "react";
-import { FlatList, Image, Text, TouchableOpacity, View } from "react-native";
+import React, { useEffect } from "react";
+import { FlatList, Image, Text, TouchableOpacity, View, StyleSheet } from "react-native";
 import CommonView from "../Components/CommonView";
-import { useNavigation, useRoute } from "@react-navigation/native";
-import { IBook, IChapter } from "../Model";
+import { RouteProp, useRoute } from "@react-navigation/native";
+import { IBook, IChapter, RootStackParamList } from "../Model";
 import Api from "../Api";
 
+type BookDetailRouteProp = RouteProp<
+  RootStackParamList,
+  "BookDetail"
+>;
 const BookDetailPage = () => {
-  const route = useRoute();
+  const route = useRoute<BookDetailRouteProp>();
   const book = route.params?.book;
   const [chapterList, setChapterList] = React.useState<IChapter[]>([]);
   useEffect(() => {
@@ -26,33 +30,25 @@ const BookDetailPage = () => {
 
   const bookInfoView = (item: IBook) => {
     return (
-      <View style={{}}>
-        <View style={{ flexDirection: 'row', padding: 10 }}>
+      <View style={styles.bookInfoContainer}>
+        <View style={styles.bookRow}>
           <View>
             <Image
-              style={{ width: 140, height: 200 }}
+              style={styles.cover}
               source={{ uri: item.imgUrl }}
             />
           </View>
-          <View style={{ flex: 1, marginLeft: 10 }}>
-            <Text style={{ fontSize: 20, fontWeight: 'bold' }}>{item.title}</Text>
-            <Text style={{ marginTop: 8 }} >{`作者: ${item.author}`}</Text>
-            <Text style={{ marginTop: 8 }} numberOfLines={3}>{item.des}</Text>
-            <Text style={{ marginTop: 8 }} >{`更新内容: ${item.update_content}`}</Text>
-            <Text style={{ marginTop: 8 }} >{`更新时间: ${item.update_time.includes('T') ? item.update_time.split('T')[0] : item.update_time}`}</Text>
+          <View style={styles.bookContent}>
+            <Text style={styles.bookTitle}>{item.title}</Text>
+            <Text style={styles.metaText}>{`作者: ${item.author}`}</Text>
+            <Text style={styles.metaText} numberOfLines={3}>{item.des}</Text>
+            <Text style={styles.metaText}>{`更新内容: ${item.update_content}`}</Text>
+            <Text style={styles.metaText}>{`更新时间: ${item.update_time.includes('T') ? item.update_time.split('T')[0] : item.update_time}`}</Text>
             <TouchableOpacity
-              style={{
-                marginTop: 10,
-                width: 100,
-                height: 40,
-                backgroundColor: '#999',
-                justifyContent: 'center',
-                alignItems: 'center',
-                borderRadius: 12,
-              }}
+              style={styles.readButton}
               onPress={onPressStartRead.bind(this, 1)}
             >
-              <Text style={{}} >{`开始阅读`}</Text>
+              <Text style={styles.readButtonText}>{`开始阅读`}</Text>
             </TouchableOpacity>
           </View>
         </View>
@@ -67,13 +63,13 @@ const BookDetailPage = () => {
         <TouchableOpacity
           onPress={onPressStartRead.bind(this, item.chapter_id)}
         >
-          <View style={{ flexDirection: 'row', padding: 10 }}>
+          <View style={styles.chapterRow}>
             <View>
-              <Text style={{ fontSize: 20, fontWeight: 'bold' }}>{item.tit}</Text>
+              <Text style={styles.chapterTitle}>{item.tit}</Text>
             </View>
           </View>
         </TouchableOpacity>
-        <View style={{ height: 1, backgroundColor: '#999' }} />
+        <View style={styles.divider} />
       </View>
     )
   }
@@ -84,7 +80,7 @@ const BookDetailPage = () => {
     >
       {bookInfoView(book)}
       <FlatList
-        style={{ flex: 1 }}
+        style={styles.list}
         data={chapterList}
         renderItem={_renderItem}
         keyExtractor={(item, index) => index.toString()}
@@ -94,3 +90,53 @@ const BookDetailPage = () => {
 };
 
 export default BookDetailPage;
+
+const styles = StyleSheet.create({
+  bookInfoContainer: {},
+  bookRow: {
+    flexDirection: 'row',
+    padding: 10,
+  },
+  cover: {
+    width: 140,
+    height: 200,
+  },
+  bookContent: {
+    flex: 1,
+    marginLeft: 10,
+  },
+  bookTitle: {
+    fontSize: 20,
+    fontWeight: 'bold',
+  },
+  metaText: {
+    marginTop: 8,
+  },
+  readButton: {
+    marginTop: 10,
+    width: 100,
+    height: 40,
+    backgroundColor: '#339AF0',
+    justifyContent: 'center',
+    alignItems: 'center',
+    borderRadius: 12,
+  },
+  readButtonText: {
+    color: '#fff',
+  },
+  chapterRow: {
+    flexDirection: 'row',
+    padding: 10,
+  },
+  chapterTitle: {
+    fontSize: 20,
+    fontWeight: 'bold',
+  },
+  divider: {
+    height: 1,
+    backgroundColor: '#999',
+  },
+  list: {
+    flex: 1,
+  },
+});

@@ -32,17 +32,17 @@ const CommonView: React.FC<IProps> = ({
   };
 
   return (
-    <View style={{ flex: 1 }}>
+    <View style={styles.container}>
       <SafeAreaView
         edges={["top", "left", "right"]}
-        style={{ backgroundColor: "#fff" }}
+        style={styles.headerSafeArea}
       >
-        <View style={styles.container}>
+        <View style={styles.headerContainer}>
           <View style={styles.leftside}>
             {back ? (
               <TouchableOpacity onPress={handleBack}>
                 <Image
-                  style={{ width: 20, height: 20 }}
+                  style={styles.backImage}
                   source={images.backIcon}
                 />
               </TouchableOpacity>
@@ -58,7 +58,7 @@ const CommonView: React.FC<IProps> = ({
           <View style={styles.rightSide}>{rightView}</View>
         </View>
       </SafeAreaView>
-      <View style={{ flex: 1, backgroundColor: '#eee' }}>
+      <View style={styles.childrenContainer}>
         {children}
       </View>
     </View>
@@ -67,6 +67,13 @@ const CommonView: React.FC<IProps> = ({
 
 const styles = StyleSheet.create({
   container: {
+    flex: 1,
+    backgroundColor: "#fff",
+  },
+  headerSafeArea: {
+    backgroundColor: "#fff",
+  },
+  headerContainer: {
     flexDirection: "row",
     height: 50,
     alignItems: "center",
@@ -95,6 +102,14 @@ const styles = StyleSheet.create({
   backText: {
     fontSize: 16,
     color: "#007aff",
+  },
+  backImage: {
+    width: 20,
+    height: 20,
+  },
+  childrenContainer: {
+    flex: 1,
+    backgroundColor: '#eee'
   },
 });
 
