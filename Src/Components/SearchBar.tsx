@@ -4,22 +4,17 @@ import images from "../images";
 
 interface IProps {
   placeholder?: string
-  // value?: string
-  // onChangeText?: (text: string) => void
   onPressSearch?: (text: string) => void
 }
 
 const SearchBar: FC<IProps> = ({
   placeholder = '请输入搜索内容',
-  // value,
-  // onChangeText,
   onPressSearch,
 }) => {
 
   const [value, setValue] = React.useState<string>('');
 
   const onPress = () => {
-    console.log('onPress');
     if (onPressSearch && value) {
       onPressSearch(value);
     }
@@ -91,6 +86,7 @@ const styles = StyleSheet.create({
   },
   input: {
     flex: 1,
+    height: 40,
   },
   image: {
     width: 25,

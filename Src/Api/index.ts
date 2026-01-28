@@ -27,6 +27,9 @@ const GET = async (path: string, params: any) => {
   console.log('[GET]:', `${BASE_URL}/${path}`);
   const response = await fetch(`${BASE_URL}/${path}`, {
     method: 'GET',
+    headers: {
+      'timeout': '60000',
+    }
   });
   if (response.ok === false) {
     throw new Error(response.statusText);

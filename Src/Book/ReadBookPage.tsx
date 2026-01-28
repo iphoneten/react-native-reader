@@ -1,6 +1,6 @@
 import { RouteProp, useNavigation, useRoute } from "@react-navigation/native";
 import React, { useCallback, useEffect, useState } from "react";
-import { View, Text, StyleSheet, Dimensions, TouchableNativeFeedback, GestureResponderEvent, LayoutChangeEvent, ScrollView, TouchableOpacity, Image } from "react-native";
+import { View, Text, StyleSheet, Dimensions, TouchableNativeFeedback, GestureResponderEvent, LayoutChangeEvent, TouchableOpacity, Image } from "react-native";
 import { IBookContent, RootStackParamList } from "../Model";
 import Api from "../Api";
 import { SafeAreaView, useSafeAreaInsets } from "react-native-safe-area-context";
@@ -12,15 +12,16 @@ const { width, height } = Dimensions.get("window");
 const FONT_SIZE = 20;
 const LINE_HEIGHT = 24;
 const PADDING_VERTICAL = 40; // top + bottom padding in container
+const BOTTOM_BAR_HEIGHT = 30;
 const ReadBookPage = () => {
   const route = useRoute<ReadBookRouteProp>();
   const navigation = useNavigation();
   const insets = useSafeAreaInsets();
   const [bookContent, setBookContent] = useState<IBookContent>();
-  const [showHeader, setShowHeader] = useState(true);
+  const [showHeader, setShowHeader] = useState(false);
   const [pages, setPages] = useState<string[]>([]);
   const [currentPage, setCurrentPage] = useState(0);
-  const [containerHeight, setContainerHeight] = useState(height - PADDING_VERTICAL - 100 - insets.top - insets.bottom - (showHeader ? 50 : 0));
+  const [containerHeight, setContainerHeight] = useState(height - PADDING_VERTICAL - 100 - insets.top - insets.bottom - (showHeader ? 50 : 0) - BOTTOM_BAR_HEIGHT);
   const { book, chapter, chapterList } = route.params;
   const [currentChapterId, setCurrentChapterId] = useState(chapter.chapter_id);
   useEffect(() => {
@@ -69,9 +70,11 @@ const ReadBookPage = () => {
   }
 
   const paginateContent = useCallback((content: string): string[] => {
-    // Calculate number of lines per page with a safety factor to avoid last line cut off
-    const safetyFactor = 0.9;
-    const linesPerPage = Math.floor(containerHeight / (LINE_HEIGHT + 6) * safetyFactor);
+    // RN 字体 ascent / descent 在 Android 下存在像素偏差，必须预留 1 行
+    const linesPerPage = Math.max(
+      1,
+      Math.floor(containerHeight / LINE_HEIGHT)
+    );
     // Split content into lines by \n
     const lines = content.split('\n');
     const tempPages: string[] = [];
@@ -123,8 +126,9 @@ const ReadBookPage = () => {
 
   const onContainerLayout = (event: LayoutChangeEvent) => {
     const layoutHeight = event.nativeEvent.layout.height;
-    if (layoutHeight !== containerHeight) {
-      setContainerHeight((layoutHeight));
+    const effectiveHeight = layoutHeight - BOTTOM_BAR_HEIGHT - insets.bottom - insets.top;
+    if (effectiveHeight !== containerHeight) {
+      setContainerHeight(effectiveHeight);
     }
   }
 
@@ -133,7 +137,7 @@ const ReadBookPage = () => {
   }
 
   return (
-    <SafeAreaView style={styles.container}>
+    <SafeAreaView style={styles.container} >
       {(
         <View style={{ position: 'absolute', top: insets.top, zIndex: 1 }} >
           <View style={[styles.headerContainer, { opacity: showHeader ? 1 : 0 }]}>
@@ -162,15 +166,19 @@ const ReadBookPage = () => {
             {currentPage === 0 && (
               <Text style={styles.titleText}>{bookContent?.tit}</Text>
             )}
-            <ScrollView style={{ flex: 1, width: '100%' }} scrollEnabled={false} showsVerticalScrollIndicator={false}>
+            <View style={{ width: '100%' }}>
               <Text style={styles.content}>{pages[currentPage] || ''}</Text>
-            </ScrollView>
+            </View>
           </View>
         </TouchableNativeFeedback>
-        <View style={styles.bottomView}>
-          <Text>{`${book.title}--${bookContent?.tit}`}</Text>
-          <Text style={styles.pageNumber}>{pages.length > 0 ? `${currentPage + 1} / ${pages.length}` : ''}</Text>
-        </View>
+        {(
+          <View style={styles.bottomView}>
+            <View style={{ flexDirection: 'row', alignItems: 'center', marginTop: 16, marginLeft: 16 }}>
+              <Text>{`${book.title}--${bookContent?.tit}`}</Text>
+              <Text style={styles.pageNumber}>{pages.length > 0 ? `${currentPage + 1} / ${pages.length}` : ''}</Text>
+            </View>
+          </View>
+        )}
       </View>
     </SafeAreaView >
   );
@@ -184,22 +192,22 @@ const styles = StyleSheet.create({
   },
   bookContainer: {
     alignItems: 'center',
-    justifyContent: 'center',
     paddingHorizontal: 20,
-    // paddingVertical: 20,
+    paddingTop: 16,
     backgroundColor: '#eee',
   },
   titleText: {
     fontSize: 20,
     fontWeight: 'bold',
+    marginBottom: 12,
   },
   content: {
     fontSize: FONT_SIZE,
-    fontWeight: '500',
+    // fontWeight: '500',
     lineHeight: LINE_HEIGHT,
-    // marginTop: 10,
     textAlign: 'left',
-    flex: 1,
+    includeFontPadding: false,
+    paddingBottom: 6,
   },
   pageNumber: {
     fontSize: 14,
@@ -243,10 +251,7 @@ const styles = StyleSheet.create({
     height: 20,
   },
   bottomView: {
-    flexDirection: 'row',
-    alignContent: 'center',
-    alignItems: 'center',
-    padding: 8
+    height: BOTTOM_BAR_HEIGHT
   },
 });
 

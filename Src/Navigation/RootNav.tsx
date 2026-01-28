@@ -11,6 +11,7 @@ const RootNav = () => {
       screenOptions={{
         headerShown: false
       }}
+      initialRouteName="TabNav"
     >
       <stack.Screen name="TabNav" component={TabNav} options={{ headerShown: false }} />
       <stack.Screen name="BookDetail" component={BookDetailPage} />

@@ -1,34 +1,28 @@
 import React, { useEffect } from "react";
 import { Text, View, StyleSheet, ScrollView, TouchableOpacity, FlatList, RefreshControl } from "react-native";
 import SearchBar from "../Components/SearchBar";
-import Api from "../Api";
 import { categroyList, DefaultPageSize } from "../Util";
 import { IBook, RootStackParamList } from "../Model";
 import { useUIStore } from "../Store/UIStore";
 import { useNavigation } from "@react-navigation/native";
 import { NativeStackNavigationProp } from "@react-navigation/native-stack";
 import BookItem from "../Components/BookItem";
+import { useReaderBookStore } from "../Store/ReaderBookStore";
 
 type DiscoverNavProp = NativeStackNavigationProp<RootStackParamList, 'Discover'>;
 const DiscoverPage = () => {
   const navigation = useNavigation<DiscoverNavProp>();
   const [currentCategory, setCurrentCategory] = React.useState(categroyList[0]);
   const [page, setPage] = React.useState(1);
-  const [bookList, setBookList] = React.useState<IBook[]>([]);
   const globalLoading = useUIStore(state => state.showLoading);
+  const fethcBooks = useReaderBookStore(state => state.fetchBooks);
+  const bookList = useReaderBookStore(state => state.bookList);
 
   useEffect(() => {
-    Api.getCategoryBook(currentCategory.class, page).then(res => {
-      if (page === 1) {
-        setBookList(res);
-      } else {
-        setBookList(prev => [...prev, ...res]);
-      }
-    });
-  }, [currentCategory, page]);
+    fethcBooks(currentCategory.class, page);
+  }, [currentCategory, page, fethcBooks]);
 
   const onPressCategory = (item: any) => {
-    setBookList([]);
     setPage(1);
     setCurrentCategory(item);
   };
