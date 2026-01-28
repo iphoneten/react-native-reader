@@ -5,23 +5,18 @@
  * @format
  */
 
-import { NavigationContainer } from '@react-navigation/native';
 import {
   SafeAreaProvider,
 } from 'react-native-safe-area-context';
-import RootNav from './Src/Navigation/RootNav';
 import GlobalLoadingMask from './Src/Components/GlobalLoadingMask';
+import { RootNavContainer } from './Src/Navigation';
 
 function App() {
-
   return (
     <SafeAreaProvider>
-      <NavigationContainer>
-        <RootNav />
-      </NavigationContainer>
+      <RootNavContainer />
       <GlobalLoadingMask />
     </SafeAreaProvider>
-
   );
 }
 

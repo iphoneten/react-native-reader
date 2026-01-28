@@ -1,5 +1,7 @@
 export type RootStackParamList = {
   Home: undefined;
+  Discover: undefined;
+  Mine: undefined;
   BookDetail: {
     book: IBook;
   };
