@@ -28,7 +28,12 @@ const GET = async (path: string, params: any) => {
   const response = await fetch(`${BASE_URL}/${path}`, {
     method: 'GET',
   });
-  return response.json();
+  if (response.ok === false) {
+    throw new Error(response.statusText);
+  }
+  const json = await response.json();
+  console.log('[GET]:', json);
+  return json;
 };
 
 const getCategoryBook = async (classString: string, page: number = 1): Promise<IBook[]> => {
@@ -48,7 +53,6 @@ const getCategoryBook = async (classString: string, page: number = 1): Promise<I
   } catch (error) {
     return [];
   } finally {
-    console.log('endLoading');
     useUIStore.getState().endLoading();
   }
 };
@@ -61,8 +65,8 @@ const getBookListApi = async (bookId: number, page: number = 1): Promise<IChapte
     page: page,
     sort: 0,
   };
+  useUIStore.getState().startLoading();
   try {
-    useUIStore.getState().startLoading();
     const response = await GET(path, params);
     if (response.code === 0) {
       return [];
@@ -71,7 +75,6 @@ const getBookListApi = async (bookId: number, page: number = 1): Promise<IChapte
   } catch (error) {
     return [];
   } finally {
-    console.log('endLoading');
     useUIStore.getState().endLoading();
   }
 }

@@ -21,18 +21,14 @@ const BookDetailPage = () => {
   const navigation = useNavigation<BookDetailNavigationProp>();
   const book = route.params?.book;
   const [chapterList, setChapterList] = React.useState<IChapter[]>([]);
-
   const myBooks = useReaderBookStore(state => state.books);
   const setBook = useReaderBookStore(state => state.setBook);
   const removeBook = useReaderBookStore(state => state.removeBook);
-  console.log('myBooks', myBooks);
 
   useEffect(() => {
-    console.log('book', book);
     const bookId = book?.id;
     if (bookId) {
       Api.getBookListApi(bookId).then(res => {
-        console.log('getBookDetail', res);
         setChapterList(res);
       });
     }
