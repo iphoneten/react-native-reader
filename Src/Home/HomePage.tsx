@@ -6,6 +6,8 @@ import { IBook, RootStackParamList } from "../Model";
 import { useNavigation } from "@react-navigation/native";
 import BookItem from "../Components/BookItem";
 import { NativeStackNavigationProp } from "@react-navigation/native-stack";
+import { useReaderBookStore } from "../Store/ReaderBookStore";
+import { useUIStore } from "../Store/UIStore";
 
 type HomeNavProp = NativeStackNavigationProp<
   RootStackParamList,
@@ -16,27 +18,27 @@ const HomePage = () => {
   const [currentCategory, setCurrentCategory] = React.useState(categroyList[0]);
   const [page, setPage] = React.useState(1);
   const [bookList, setBookList] = React.useState<IBook[]>([]);
-  const [isLoading, setLoading] = React.useState(false);
+  const globalLoading = useUIStore(state => state.showLoading);
+  const myBooks = useReaderBookStore(state => state.books);
+  console.log('books', myBooks);
   useEffect(() => {
-    setLoading(true);
     Api.getCategoryBook(currentCategory.class, page).then(res => {
       if (page === 1) {
         setBookList(res);
       } else {
         setBookList(prev => [...prev, ...res]);
       }
-      setLoading(false);
     });
   }, [currentCategory, page]);
 
-  const onPressCategory = (item: any) => {
-    setBookList([]);
-    setPage(1);
-    setCurrentCategory(item);
-  };
+  // const onPressCategory = (item: any) => {
+  //   setBookList([]);
+  //   setPage(1);
+  //   setCurrentCategory(item);
+  // };
 
   const onLoadMore = () => {
-    if (isLoading) return;
+    if (globalLoading) return;
     const count = bookList.length;
     if (count % DefaultPageSize !== 0) return;
     const nextPage = page + 1;
@@ -58,7 +60,7 @@ const HomePage = () => {
 
   return (
     <View style={styles.container}>
-      <ScrollView
+      {/* <ScrollView
         style={styles.categoryScroll}
         horizontal={true}
         showsHorizontalScrollIndicator={false}
@@ -77,14 +79,14 @@ const HomePage = () => {
             );
           })
         }
-      </ScrollView>
+      </ScrollView> */}
       <FlatList
-        data={bookList}
+        data={myBooks}
         renderItem={_renderItem}
         keyExtractor={(item, index) => index.toString()}
         refreshControl={
           <RefreshControl
-            refreshing={isLoading}
+            refreshing={globalLoading}
             onRefresh={() => {
               setPage(1);
             }}

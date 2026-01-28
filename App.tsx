@@ -10,6 +10,7 @@ import {
   SafeAreaProvider,
 } from 'react-native-safe-area-context';
 import RootNav from './Src/Navigation/RootNav';
+import GlobalLoadingMask from './Src/Components/GlobalLoadingMask';
 
 function App() {
 
@@ -18,6 +19,7 @@ function App() {
       <NavigationContainer>
         <RootNav />
       </NavigationContainer>
+      <GlobalLoadingMask />
     </SafeAreaProvider>
 
   );

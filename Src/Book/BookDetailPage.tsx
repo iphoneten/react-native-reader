@@ -5,6 +5,7 @@ import { RouteProp, useNavigation, useRoute } from "@react-navigation/native";
 import { IBook, IChapter, RootStackParamList } from "../Model";
 import Api from "../Api";
 import { NativeStackNavigationProp } from "@react-navigation/native-stack";
+import { useReaderBookStore } from "../Store/ReaderBookStore";
 
 type BookDetailRouteProp = RouteProp<
   RootStackParamList,
@@ -20,6 +21,12 @@ const BookDetailPage = () => {
   const navigation = useNavigation<BookDetailNavigationProp>();
   const book = route.params?.book;
   const [chapterList, setChapterList] = React.useState<IChapter[]>([]);
+
+  const myBooks = useReaderBookStore(state => state.books);
+  const setBook = useReaderBookStore(state => state.setBook);
+  const removeBook = useReaderBookStore(state => state.removeBook);
+  console.log('myBooks', myBooks);
+
   useEffect(() => {
     console.log('book', book);
     const bookId = book?.id;
@@ -35,6 +42,16 @@ const BookDetailPage = () => {
     console.log('onPressStartRead', chapterId);
     const chapter = chapterList.find(item => item.chapter_id === chapterId) || chapterList[0];
     navigation.navigate('ReadBook', { book, chapter, chapterList });
+  };
+
+  const onPressAddBook = () => {
+
+    const isInBooks = myBooks.find(item => item.id === book?.id);
+    if (isInBooks) {
+      removeBook(isInBooks);
+      return;
+    }
+    setBook(book);
   };
 
   const bookInfoView = (item: IBook) => {
@@ -53,12 +70,20 @@ const BookDetailPage = () => {
             <Text style={styles.metaText} numberOfLines={3}>{item.des}</Text>
             <Text style={styles.metaText}>{`更新内容: ${item.update_content}`}</Text>
             <Text style={styles.metaText}>{`更新时间: ${item.update_time.includes('T') ? item.update_time.split('T')[0] : item.update_time}`}</Text>
-            <TouchableOpacity
-              style={styles.readButton}
-              onPress={onPressStartRead.bind(this, 1)}
-            >
-              <Text style={styles.readButtonText}>{`开始阅读`}</Text>
-            </TouchableOpacity>
+            <View style={styles.buttonView}>
+              <TouchableOpacity
+                style={styles.readButton}
+                onPress={onPressStartRead.bind(this, 1)}
+              >
+                <Text style={styles.readButtonText}>{`开始阅读`}</Text>
+              </TouchableOpacity>
+              <TouchableOpacity
+                style={[styles.readButton, styles.addButton]}
+                onPress={onPressAddBook}
+              >
+                <Text style={styles.readButtonText}>{`加入书架`}</Text>
+              </TouchableOpacity>
+            </View>
           </View>
         </View>
       </View>
@@ -122,6 +147,10 @@ const styles = StyleSheet.create({
   metaText: {
     marginTop: 8,
   },
+  buttonView: {
+    flexDirection: 'row',
+    alignItems: 'center',
+  },
   readButton: {
     marginTop: 10,
     width: 100,
@@ -130,6 +159,9 @@ const styles = StyleSheet.create({
     justifyContent: 'center',
     alignItems: 'center',
     borderRadius: 12,
+  },
+  addButton: {
+    marginLeft: 10,
   },
   readButtonText: {
     color: '#fff',

@@ -6,4 +6,5 @@ export default {
   fundSel: require('./tabbar/fund_Sel.png'),
   mineNor: require('./tabbar/mine_Nor.png'),
   mineSel: require('./tabbar/mine_Sel.png'),
+  blueClosedIcon: require('./commonIcon/closeIcon.png'),
 }

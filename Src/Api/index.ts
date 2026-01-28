@@ -1,4 +1,5 @@
 import { IBook, IBookContent, IChapter } from "../Model";
+import { useUIStore } from "../Store/UIStore";
 import { DefaultPageSize } from "../Util";
 
 const BASE_URL = 'https://www.bqgns.com';
@@ -37,6 +38,7 @@ const getCategoryBook = async (classString: string, page: number = 1): Promise<I
     size: DefaultPageSize,
     page: page,
   };
+  useUIStore.getState().startLoading();
   try {
     const response = await GET(path, params);
     if (response.code === 0) {
@@ -46,7 +48,8 @@ const getCategoryBook = async (classString: string, page: number = 1): Promise<I
   } catch (error) {
     return [];
   } finally {
-
+    console.log('endLoading');
+    useUIStore.getState().endLoading();
   }
 };
 
@@ -59,6 +62,7 @@ const getBookListApi = async (bookId: number, page: number = 1): Promise<IChapte
     sort: 0,
   };
   try {
+    useUIStore.getState().startLoading();
     const response = await GET(path, params);
     if (response.code === 0) {
       return [];
@@ -67,7 +71,8 @@ const getBookListApi = async (bookId: number, page: number = 1): Promise<IChapte
   } catch (error) {
     return [];
   } finally {
-
+    console.log('endLoading');
+    useUIStore.getState().endLoading();
   }
 }
 
