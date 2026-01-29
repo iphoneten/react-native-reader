@@ -1,42 +1,59 @@
-import { RouteProp, useNavigation, useRoute } from "@react-navigation/native";
+import { NavigationProp, RouteProp, useNavigation, useRoute } from "@react-navigation/native";
 import React, { useCallback, useEffect, useState } from "react";
 import { View, Text, StyleSheet, Dimensions, TouchableNativeFeedback, GestureResponderEvent, LayoutChangeEvent, TouchableOpacity, Image } from "react-native";
 import { IBookContent, RootStackParamList } from "../Model";
 import Api from "../Api";
 import { SafeAreaView, useSafeAreaInsets } from "react-native-safe-area-context";
 import images from "../images";
+import { useReaderBookStore } from "../Store/ReaderBookStore";
 
 type ReadBookRouteProp = RouteProp<RootStackParamList, 'ReadBook'>;
+type ReadBookNavigationProp = NavigationProp<RootStackParamList, 'ReadBook'>;
 const { width, height } = Dimensions.get("window");
-
 const FONT_SIZE = 20;
 const LINE_HEIGHT = 24;
 const PADDING_VERTICAL = 40; // top + bottom padding in container
 const BOTTOM_BAR_HEIGHT = 30;
 const ReadBookPage = () => {
   const route = useRoute<ReadBookRouteProp>();
-  const navigation = useNavigation();
+  const navigation = useNavigation<ReadBookNavigationProp>();
+  const { book } = route.params;
   const insets = useSafeAreaInsets();
+  const setReadHistory = useReaderBookStore(state => state.setHistorty);
+  const history = useReaderBookStore(state => state.historty);
+  const bookHistory = history[book.id];
   const [bookContent, setBookContent] = useState<IBookContent>();
   const [showHeader, setShowHeader] = useState(false);
   const [pages, setPages] = useState<string[]>([]);
-  const [currentPage, setCurrentPage] = useState(0);
+  const [currentPage, setCurrentPage] = useState(bookHistory?.page || 0);
   const [containerHeight, setContainerHeight] = useState(height - PADDING_VERTICAL - 100 - insets.top - insets.bottom - (showHeader ? 50 : 0) - BOTTOM_BAR_HEIGHT);
-  const { book, chapter, chapterList } = route.params;
-  const [currentChapterId, setCurrentChapterId] = useState(chapter.chapter_id);
+  const [currentChapterId, setCurrentChapterId] = useState(bookHistory?.chapterId || 1);
+  const [isLoading, setIsLoading] = useState(false);
+
+  const [isRightPage, setIsRightPage] = useState(false);
+
   useEffect(() => {
-    Api.getBookContentApi(book.id, currentChapterId).then(res => {
+    setIsLoading(true);
+    Api.getBookContentApi(book.id, bookHistory.chapterId).then(res => {
       setBookContent(res);
-      setCurrentPage(0);
+      setIsLoading(false);
     })
-  }, [book, currentChapterId]);
+  }, [book, bookHistory.chapterId]);
+
+  useEffect(() => {
+    setReadHistory(book.id, currentChapterId, currentPage);
+  }, [currentPage, currentChapterId, setReadHistory, book.id])
 
   useEffect(() => {
     if (bookContent?.text) {
       const content = stripHtml(bookContent.text);
       const newPages = paginateContent(content);
       setPages(newPages);
-      setCurrentPage(0);
+      if (isRightPage) {
+        setCurrentPage(newPages.length - 1);
+      } else {
+        setCurrentPage(bookHistory?.page || 0);
+      }
     }
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [bookContent, containerHeight]);
@@ -98,25 +115,37 @@ const ReadBookPage = () => {
     const third = width / 3;
 
     if (touchX < third) {
+      if (showHeader) {
+        setShowHeader(false);
+        return;
+      };
       // 左翻页
       if (currentPage > 0) {
         const nextPage = currentPage - 1;
         setCurrentPage(nextPage);
         setShowHeader(false);
       }
-      if (currentPage === 0 && currentChapterId > 1) {
-        setCurrentChapterId(currentChapterId - 1);
+      if (currentPage === 0 && bookHistory?.chapterId > 1) {
+        const preChapterId = bookHistory.chapterId - 1;
+        setIsRightPage(true);
+        setCurrentChapterId(preChapterId);
       }
     } else if (touchX > 2 * third) {
       // 右翻页
-      console.log(currentPage, pages.length);
+      if (showHeader) {
+        setShowHeader(false);
+        return;
+      };
       if (currentPage < pages.length - 1) {
         const nextPage = currentPage + 1;
         setCurrentPage(nextPage);
         setShowHeader(false);
       }
-      if (currentPage === pages.length - 1 && currentChapterId < chapterList?.length) {
-        setCurrentChapterId(currentChapterId + 1);
+      if (currentPage === pages.length - 1) {
+        const nextChapterId = bookHistory.chapterId + 1;
+        setIsRightPage(false);
+        setCurrentChapterId(nextChapterId);
+        setCurrentPage(0);
       }
     } else {
       // 中间区域，显示/隐藏 Header
@@ -134,6 +163,10 @@ const ReadBookPage = () => {
 
   const handleBack = () => {
     navigation.goBack();
+  }
+
+  const onPressBookDetail = () => {
+    navigation.navigate('BookDetail', { book: book });
   }
 
   return (
@@ -154,6 +187,18 @@ const ReadBookPage = () => {
             <View style={styles.titleContainer}>
               <Text style={styles.title}>{book.title}</Text>
             </View>
+            <View style={styles.rightSide}>
+              <TouchableOpacity
+                onPress={onPressBookDetail}
+              >
+                <View>
+                  <Image
+                    style={styles.backImage}
+                    source={images.moreIcon}
+                  />
+                </View>
+              </TouchableOpacity>
+            </View>
           </View>
         </View>
       )}
@@ -162,18 +207,24 @@ const ReadBookPage = () => {
           onPress={onPressArea}
           onLayout={onContainerLayout}
         >
-          <View style={[styles.container, styles.bookContainer]}>
-            {currentPage === 0 && (
-              <Text style={styles.titleText}>{bookContent?.tit}</Text>
-            )}
-            <View style={{ width: '100%' }}>
-              <Text style={styles.content}>{pages[currentPage] || ''}</Text>
-            </View>
-          </View>
+          {isLoading ?
+            (
+              <View style={styles.container} />
+            ) : (
+              <View style={[styles.container, styles.bookContainer]}>
+                {currentPage === 0 && (
+                  <Text style={styles.titleText}>{bookContent?.tit}</Text>
+                )}
+                <View style={{ width: '100%' }}>
+                  <Text style={styles.content}>{pages[currentPage] || ''}</Text>
+                </View>
+              </View>
+            )
+          }
         </TouchableNativeFeedback>
         {(
           <View style={styles.bottomView}>
-            <View style={{ flexDirection: 'row', alignItems: 'center', marginTop: 16, marginLeft: 16 }}>
+            <View style={{ flexDirection: 'row', alignItems: 'center', marginTop: 10, marginLeft: 16 }}>
               <Text>{`${book.title}--${bookContent?.tit}`}</Text>
               <Text style={styles.pageNumber}>{pages.length > 0 ? `${currentPage + 1} / ${pages.length}` : ''}</Text>
             </View>
@@ -225,12 +276,12 @@ const styles = StyleSheet.create({
   },
   leftside: {
     width: width / 3,
-    paddingLeft: 10,
+    paddingLeft: 16,
   },
   rightSide: {
     width: width / 3,
     alignItems: "flex-end",
-    paddingRight: 10,
+    paddingRight: 16,
   },
   titleContainer: {
     width: width / 3,

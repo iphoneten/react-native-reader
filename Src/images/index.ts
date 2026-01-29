@@ -7,4 +7,5 @@ export default {
   mineNor: require('./tabbar/mine_Nor.png'),
   mineSel: require('./tabbar/mine_Sel.png'),
   blueClosedIcon: require('./commonIcon/closeIcon.png'),
+  moreIcon: require('./commonIcon/moreIcon.png'),
 }

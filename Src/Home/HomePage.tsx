@@ -13,9 +13,12 @@ type HomeNavProp = NativeStackNavigationProp<
 const HomePage = () => {
   const navigation = useNavigation<HomeNavProp>();
   const myBooks = useReaderBookStore(state => state.books);
-
+  const readHistory = useReaderBookStore(state => state.historty);
   const onPressBook = (item: IBook) => {
-    navigation.navigate('BookDetail', { book: item });
+    const bookId = item.id;
+    const history = readHistory[bookId || 0];
+    navigation.navigate('ReadBook', { book: item, chapter: { chapter_id: history.chapterId || 1, tit: '' }, chapterList: [] });
+    // navigation.navigate('BookDetail', { book: item });
   };
 
   const _renderItem = ({ item }: { item: IBook }) => {

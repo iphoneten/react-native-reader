@@ -1,6 +1,35 @@
-pluginManagement { includeBuild("../node_modules/@react-native/gradle-plugin") }
-plugins { id("com.facebook.react.settings") }
-extensions.configure(com.facebook.react.ReactSettingsExtension){ ex -> ex.autolinkLibrariesFromCommand() }
+pluginManagement {
+    repositories {
+        maven { url 'https://maven.aliyun.com/repository/gradle-plugin' }
+        gradlePluginPortal()
+        maven { url 'https://maven.aliyun.com/repository/google' }
+        maven { url 'https://maven.aliyun.com/repository/public' }
+        mavenCentral()
+    }
+    includeBuild("../node_modules/@react-native/gradle-plugin")
+}
+
+plugins {
+    id("com.facebook.react.settings")
+}
+
+// 3. 配置仓库（用于下载 App 运行所需的依赖库）
+dependencyResolutionManagement {
+    repositoriesMode.set(RepositoriesMode.PREFER_SETTINGS)
+    repositories {
+        maven { url 'https://maven.aliyun.com/repository/google' }
+        maven { url 'https://maven.aliyun.com/repository/public' }
+        // 新增这一行，专门解决插件下载失败问题
+//        maven { url 'https://maven.aliyun.com/repository/gradle-plugin' }
+//        gradlePluginPortal()
+//        google()
+        mavenCentral()
+    }
+}
+
+extensions.configure(com.facebook.react.ReactSettingsExtension){
+    ex -> ex.autolinkLibrariesFromCommand()
+}
 rootProject.name = 'Reader'
 include ':app'
 includeBuild('../node_modules/@react-native/gradle-plugin')

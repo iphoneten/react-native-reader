@@ -7,7 +7,7 @@ import { useUIStore } from "../Store/UIStore";
 import { useNavigation } from "@react-navigation/native";
 import { NativeStackNavigationProp } from "@react-navigation/native-stack";
 import BookItem from "../Components/BookItem";
-import { useReaderBookStore } from "../Store/ReaderBookStore";
+import { useBookStore } from "../Store/BookStore";
 
 type DiscoverNavProp = NativeStackNavigationProp<RootStackParamList, 'Discover'>;
 const DiscoverPage = () => {
@@ -15,8 +15,8 @@ const DiscoverPage = () => {
   const [currentCategory, setCurrentCategory] = React.useState(categroyList[0]);
   const [page, setPage] = React.useState(1);
   const globalLoading = useUIStore(state => state.showLoading);
-  const fethcBooks = useReaderBookStore(state => state.fetchBooks);
-  const bookList = useReaderBookStore(state => state.bookList);
+  const fethcBooks = useBookStore(state => state.fetchBooks);
+  const bookList = useBookStore(state => state.bookList);
 
   useEffect(() => {
     fethcBooks(currentCategory.class, page);

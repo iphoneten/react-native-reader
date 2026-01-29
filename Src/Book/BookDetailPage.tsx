@@ -20,28 +20,45 @@ const BookDetailPage = () => {
   const route = useRoute<BookDetailRouteProp>();
   const navigation = useNavigation<BookDetailNavigationProp>();
   const book = route.params?.book;
-  const [chapterList, setChapterList] = React.useState<IChapter[]>([]);
+  const chapterList = useReaderBookStore(state => state.bookChapterList[book?.id || 0]);
+  const setBookChapterList = useReaderBookStore(state => state.setBookChapterList);
   const myBooks = useReaderBookStore(state => state.books);
   const setBook = useReaderBookStore(state => state.setBook);
   const removeBook = useReaderBookStore(state => state.removeBook);
-
+  const setHistorty = useReaderBookStore(state => state.setHistorty);
+  const readHistory = useReaderBookStore(state => state.historty);
+  const isInBooksheel = myBooks.find(item => item.id === book?.id);
+  const history = readHistory[book?.id || 0];
   useEffect(() => {
     const bookId = book?.id;
     if (bookId) {
       Api.getBookListApi(bookId).then(res => {
-        setChapterList(res);
+        setBookChapterList(bookId, res);
       });
     }
-  }, [book]);
+  }, [book, setBookChapterList]);
+
+  const onClickStartRead = () => {
+    if (history) {
+      setHistorty(book?.id || 0, history.chapterId, history.page);
+    } else {
+      setHistorty(book?.id || 0, 1, 0);
+    }
+    const chapter = chapterList.find(item => item.chapter_id === 1) || chapterList[0];
+    navigation.navigate('ReadBook', { book, chapter, chapterList });
+  }
 
   const onPressStartRead = (chapterId: number = 1) => {
-    console.log('onPressStartRead', chapterId);
+    if (history && history.chapterId === chapterId) {
+      setHistorty(book?.id || 0, history.chapterId, history.page);
+    } else {
+      setHistorty(book?.id || 0, chapterId, 0);
+    }
     const chapter = chapterList.find(item => item.chapter_id === chapterId) || chapterList[0];
     navigation.navigate('ReadBook', { book, chapter, chapterList });
   };
 
   const onPressAddBook = () => {
-
     const isInBooks = myBooks.find(item => item.id === book?.id);
     if (isInBooks) {
       removeBook(isInBooks);
@@ -69,15 +86,15 @@ const BookDetailPage = () => {
             <View style={styles.buttonView}>
               <TouchableOpacity
                 style={styles.readButton}
-                onPress={onPressStartRead.bind(this, 1)}
+                onPress={onClickStartRead}
               >
-                <Text style={styles.readButtonText}>{`开始阅读`}</Text>
+                <Text style={styles.readButtonText}>{history ? `继续阅读` : `开始阅读`}</Text>
               </TouchableOpacity>
               <TouchableOpacity
                 style={[styles.readButton, styles.addButton]}
                 onPress={onPressAddBook}
               >
-                <Text style={styles.readButtonText}>{`加入书架`}</Text>
+                <Text style={styles.readButtonText}>{isInBooksheel ? `移除书架` : `加入书架`}</Text>
               </TouchableOpacity>
             </View>
           </View>
