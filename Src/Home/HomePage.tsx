@@ -18,7 +18,6 @@ const HomePage = () => {
     const bookId = item.id;
     const history = readHistory[bookId || 0];
     navigation.navigate('ReadBook', { book: item, chapter: { chapter_id: history.chapterId || 1, tit: '' }, chapterList: [] });
-    // navigation.navigate('BookDetail', { book: item });
   };
 
   const _renderItem = ({ item }: { item: IBook }) => {

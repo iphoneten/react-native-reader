@@ -1,0 +1,7 @@
+{
+    "editor.fontSize": 14,
+    "editor.minimap.maxColumn": 80,
+    "editor.wordWrap": "wordWrapColumn",
+    "editor.wordWrapColumn": 80,
+    "editor.tabSize": 2
+}

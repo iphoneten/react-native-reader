@@ -1,4 +1,4 @@
-import React, { useEffect } from "react";
+import React, { useEffect, useRef } from "react";
 import { FlatList, Image, Text, TouchableOpacity, View, StyleSheet } from "react-native";
 import CommonView from "../Components/CommonView";
 import { RouteProp, useNavigation, useRoute } from "@react-navigation/native";
@@ -20,7 +20,7 @@ const BookDetailPage = () => {
   const route = useRoute<BookDetailRouteProp>();
   const navigation = useNavigation<BookDetailNavigationProp>();
   const book = route.params?.book;
-  const chapterList = useReaderBookStore(state => state.bookChapterList[book?.id || 0]);
+  const chapterList = useReaderBookStore(state => state.bookChapterList)[book?.id || 0];
   const setBookChapterList = useReaderBookStore(state => state.setBookChapterList);
   const myBooks = useReaderBookStore(state => state.books);
   const setBook = useReaderBookStore(state => state.setBook);
@@ -29,6 +29,7 @@ const BookDetailPage = () => {
   const readHistory = useReaderBookStore(state => state.historty);
   const isInBooksheel = myBooks.find(item => item.id === book?.id);
   const history = readHistory[book?.id || 0];
+  const listRef = useRef<FlatList>(null);
   useEffect(() => {
     const bookId = book?.id;
     if (bookId) {
@@ -37,6 +38,25 @@ const BookDetailPage = () => {
       });
     }
   }, [book, setBookChapterList]);
+
+  useEffect(() => {
+    if (chapterList.length > 0 && history?.chapterId) {
+      const index = chapterList.findIndex(
+        item => item.chapter_id === history.chapterId
+      );
+      if (index < 5) {
+        return;
+      }
+      if (index >= 0) {
+        requestAnimationFrame(() => {
+          listRef.current?.scrollToIndex({
+            index: (index - 5),
+            animated: false,
+          });
+        });
+      }
+    }
+  }, [chapterList, history]);
 
   const onClickStartRead = () => {
     if (history) {
@@ -105,15 +125,21 @@ const BookDetailPage = () => {
 
 
   const _renderItem = ({ item }: { item: IChapter }) => {
+    const isNowRead = history?.chapterId === item.chapter_id;
     return (
       <View>
         <TouchableOpacity
           onPress={onPressStartRead.bind(this, item.chapter_id)}
         >
           <View style={styles.chapterRow}>
-            <View>
-              <Text style={styles.chapterTitle}>{item.tit}</Text>
+            <View style={styles.chapterContent}>
+              <Text style={[styles.chapterTitle, isNowRead && styles.nowReadChapterTitle]}>{item.tit}</Text>
             </View>
+            {isNowRead && (
+              <View>
+                <Text style={styles.nowReadText}>{'正在阅读'}</Text>
+              </View>
+            )}
           </View>
         </TouchableOpacity>
         <View style={styles.divider} />
@@ -127,10 +153,19 @@ const BookDetailPage = () => {
     >
       {bookInfoView(book)}
       <FlatList
+        ref={listRef}
         style={styles.list}
         data={chapterList}
         renderItem={_renderItem}
         keyExtractor={(item, index) => index.toString()}
+        onScrollToIndexFailed={info => {
+          setTimeout(() => {
+            listRef.current?.scrollToIndex({
+              index: info.index,
+              animated: false,
+            });
+          }, 100);
+        }}
       />
     </CommonView>
   );
@@ -182,16 +217,28 @@ const styles = StyleSheet.create({
   chapterRow: {
     flexDirection: 'row',
     padding: 10,
+    alignItems: 'center',
   },
   chapterTitle: {
     fontSize: 16,
     fontWeight: 'medium',
+  },
+  nowReadChapterTitle: {
+    fontWeight: 'bold',
+    color: 'red',
   },
   divider: {
     height: 1,
     backgroundColor: '#d5d4d4ff',
   },
   list: {
+    flex: 1,
+  },
+  nowReadText: {
+    marginLeft: 10,
+    color: 'red',
+  },
+  chapterContent: {
     flex: 1,
   },
 });

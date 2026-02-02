@@ -8,4 +8,5 @@ export default {
   mineSel: require('./tabbar/mine_Sel.png'),
   blueClosedIcon: require('./commonIcon/closeIcon.png'),
   moreIcon: require('./commonIcon/moreIcon.png'),
+  default: require('./commonIcon/Default.png'),
 }
