@@ -1,3 +1,10 @@
+import { RouteProp, NavigationProp } from '@react-navigation/native';
+
+export type ScreenProps<T extends keyof RootStackParamList> = {
+  route: RouteProp<RootStackParamList, T>;
+  navigation: NavigationProp<RootStackParamList, T>;
+};
+
 export type RootStackParamList = {
   Home: undefined;
   Discover: undefined;

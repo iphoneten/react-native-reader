@@ -7,7 +7,7 @@ interface IUIState {
   endLoading(): void;
 }
 
-export const useUIStore = create<IUIState>()(
+const useUIStore = create<IUIState>()(
   (set) => ({
     loadingCount: 0,
     showLoading: false,
@@ -18,3 +18,13 @@ export const useUIStore = create<IUIState>()(
     }),
   })
 )
+
+export const startLoading = () => {
+  return useUIStore.getState().startLoading();
+}
+
+export const endLoading = () => {
+  return useUIStore.getState().endLoading();
+}
+
+export default useUIStore

@@ -1,5 +1,5 @@
 import { IBook, IBookContent, IChapter } from "../Model";
-import { useUIStore } from "../Store/UIStore";
+import useUIStore, { endLoading, startLoading } from "../Store/UIStore";
 import { DefaultPageSize } from "../Util";
 
 const BASE_URL = 'https://www.bqgns.com';
@@ -46,7 +46,7 @@ const getCategoryBook = async (classString: string, page: number = 1): Promise<I
     size: DefaultPageSize,
     page: page,
   };
-  useUIStore.getState().startLoading();
+  startLoading();
   try {
     const response = await GET(path, params);
     if (response.code === 0) {
@@ -56,7 +56,7 @@ const getCategoryBook = async (classString: string, page: number = 1): Promise<I
   } catch (error) {
     return [];
   } finally {
-    useUIStore.getState().endLoading();
+    endLoading();
   }
 };
 

@@ -1,10 +1,10 @@
 import { FC } from "react";
-import { useUIStore } from "../Store/UIStore";
+import useUIStore from "../Store/UIStore";
 import { ActivityIndicator, View, StyleSheet } from "react-native";
 
 const GlobalLoadingMask: FC = () => {
-  const show = useUIStore(state => state.showLoading);
-  if (!show) return null;
+  const { showLoading } = useUIStore();
+  if (!showLoading) return null;
   return (
     <View style={styles.mask}>
       <View style={styles.view}>

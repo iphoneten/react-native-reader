@@ -1,27 +1,28 @@
-import { NavigationProp, RouteProp, useNavigation, useRoute } from "@react-navigation/native";
 import React, { useCallback, useEffect, useState } from "react";
 import { View, Text, StyleSheet, Dimensions, TouchableNativeFeedback, GestureResponderEvent, LayoutChangeEvent, TouchableOpacity, Image } from "react-native";
-import { IBookContent, RootStackParamList } from "../Model";
+import { IBookContent, ScreenProps } from "../Model";
 import Api from "../Api";
 import { SafeAreaView, useSafeAreaInsets } from "react-native-safe-area-context";
 import images from "../images";
 import { useReaderBookStore } from "../Store/ReaderBookStore";
 
-type ReadBookRouteProp = RouteProp<RootStackParamList, 'ReadBook'>;
-type ReadBookNavigationProp = NavigationProp<RootStackParamList, 'ReadBook'>;
+type ReadBookScreenProps = ScreenProps<'ReadBook'>;
 const { width, height } = Dimensions.get("window");
 const FONT_SIZE = 20;
 const LINE_HEIGHT = 24;
 const PADDING_VERTICAL = 40; // top + bottom padding in container
 const BOTTOM_BAR_HEIGHT = 30;
-const ReadBookPage = () => {
-  const route = useRoute<ReadBookRouteProp>();
-  const navigation = useNavigation<ReadBookNavigationProp>();
+const ReadBookPage: React.FC<ReadBookScreenProps> = ({
+  route,
+  navigation
+}) => {
   const { book } = route.params;
   const insets = useSafeAreaInsets();
-  const setReadHistory = useReaderBookStore(state => state.setHistorty);
-  const history = useReaderBookStore(state => state.historty);
-  const bookHistory = history[book.id];
+  const {
+    historty,
+    setHistorty,
+  } = useReaderBookStore();
+  const bookHistory = historty[book.id];
   const [bookContent, setBookContent] = useState<IBookContent>();
   const [showHeader, setShowHeader] = useState(false);
   const [pages, setPages] = useState<string[]>([]);
@@ -38,11 +39,11 @@ const ReadBookPage = () => {
       setBookContent(res);
       setIsLoading(false);
     })
-  }, [book, bookHistory.chapterId]);
+  }, [book, bookHistory?.chapterId]);
 
   useEffect(() => {
-    setReadHistory(book.id, currentChapterId, currentPage);
-  }, [currentPage, currentChapterId, setReadHistory, book.id])
+    setHistorty(book.id, currentChapterId, currentPage);
+  }, [currentPage, currentChapterId, setHistorty, book.id])
 
   useEffect(() => {
     if (bookContent?.text) {

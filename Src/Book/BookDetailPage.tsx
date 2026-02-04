@@ -40,7 +40,7 @@ const BookDetailPage = () => {
   }, [book, setBookChapterList]);
 
   useEffect(() => {
-    if (chapterList.length > 0 && history?.chapterId) {
+    if (chapterList?.length > 0 && history?.chapterId) {
       const index = chapterList.findIndex(
         item => item.chapter_id === history.chapterId
       );
